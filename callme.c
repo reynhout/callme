@@ -28,9 +28,9 @@ static void do_watch(struct watcher_struct* w)
       {
       tmp_x = statbuf.st_mtime-time0;
       unlink(w->path);
-      //w->callback(tmp_x);
       printf("(firing callback 0x%08x)", (unsigned int)w->callback);
       fflush(stdout);
+      //w->callback(tmp_x);
       rb_thread_blocking_region((rb_blocking_function_t *)w->callback, tmp_x, RUBY_UBF_IO, 0);
       }
     sleep(1);
