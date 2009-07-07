@@ -24,6 +24,33 @@ Pick a set of runtime options in runcallme.rb.  The following is the most releva
   USE_C_THREADS = true
   USE_RUBY_CALLBACK = true
 
+Run it
+
+  ruby1.9 runcallme.rb
+
+== Problem
+
+When the Ruby callback is triggered, the interpreter crashes.  This might be a dereferencing bug that I haven't been able to fix.
+
+When using the C callback, the callback executes properly, but the Ruby threads (main thread and a separate heartbeat) apparently suspend. If the Ruby callback case can be fixed, I think this second problem will still exist.
+
+If callme.c is compiled to an executable, using C threading and the C callback, everything works as expected.
+
+It looks to me like control is never passed back to Ruby after the callback completes.  Any pointers would be greatly appreciated!  NPI.
+
+  $ ruby1.9 -v
+  ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+
+== History
+
+This started out as an attempt to make Apache ZooKeeper play with Ruby, via FFI.  Everything was going well until I tried the asynchronous functions with callbacks.  Sometimes the ruby code would hang, sometimes the interpreter would crash.
+
+I backed up a bit and wrote some sample code, still using FFI but not trying to talk to ZooKeeper.  Same problems.
+
+Then I decided to go straight to a C ext to see if there was a problem in FFI.  This is that attempt.
+
+The sample code from attempt #2 does work correctly under JRuby, suggesting that I'm mishandling the Ruby threads somehow.
+
 == Thanks for any help!
 
 
