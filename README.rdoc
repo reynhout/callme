@@ -1,0 +1,29 @@
+= callme
+
+A simple Ruby 1.9 demo C extension with a callback.
+
+Extracted from an attempt to write a Ruby interface to Apache ZooKeeper.
+
+== Status
+
+Not working as expected, looking for assistance.
+
+== Usage
+
+Create a localized Makefile
+
+  ruby1.9 extconf.rb
+
+Build the library
+
+  make
+
+Pick a set of runtime options in runcallme.rb.  The following is the most relevant to my testing, but the other permutations might reveal interesting bits too.
+
+  USE_RUBY_THREADS = false
+  USE_C_THREADS = true
+  USE_RUBY_CALLBACK = true
+
+== Thanks for any help!
+
+
