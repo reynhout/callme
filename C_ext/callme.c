@@ -5,10 +5,12 @@
 #include <sys/stat.h>
 #include <ruby.h>
 
-typedef void* fp(unsigned int);
+//typedef void* fp(unsigned int);
+typedef void (*fp)(int);
+
 typedef struct watcher_struct {
   char* path;
-  fp* callback;
+  fp callback;
   } watcher_struct;
 
 static void cb_internal(int x)
@@ -37,7 +39,7 @@ static void do_watch(struct watcher_struct* w)
     }
   }
 
-VALUE watch_path(VALUE self, VALUE v_path, fp* cbfp, unsigned char use_pthreads)
+VALUE watch_path(VALUE self, VALUE v_path, fp cb_fp, unsigned char use_pthreads)
   {
   char* path = StringValuePtr(v_path);
 
@@ -46,7 +48,7 @@ VALUE watch_path(VALUE self, VALUE v_path, fp* cbfp, unsigned char use_pthreads)
 
   w = (watcher_struct *)malloc(sizeof(watcher_struct));
   w->path = path;
-  w->callback = !NIL_P(cbfp) ? cbfp : (fp *)&cb_internal;
+  w->callback = !NIL_P(cb_fp) ? cb_fp : (fp)cb_internal;
   printf("-- Trigger callback with:\n   touch %s/%s\n",getcwd(NULL,0),w->path);
   printf("-- Will use callback at address 0x%08x\n",(unsigned int)w->callback);
   fflush(stdout);
@@ -71,7 +73,7 @@ int main(void)
 
   printf("-- C callback cb_internal 0x%08x\n", (unsigned int)&cb_internal);
   fflush(stdout);
-  watch_path(0,(VALUE)path,(fp *)&cb_internal,1);
+  watch_path(0,(VALUE)path,(fp)cb_internal,1);
   for ( i=0; i<=30; i++ )
     { printf("."); fflush(stdout); sleep(1); }
   printf("done\n");

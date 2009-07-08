@@ -2,13 +2,22 @@
 
 A simple Ruby 1.9 demo C extension with a callback.
 
-Extracted from an attempt to write a Ruby interface to Apache ZooKeeper.
+Extracted from ongoing efforts to write a Ruby interface to Apache ZooKeeper (github link soon).
 
 == Status
 
 Not working as expected, looking for assistance.
 
-== Usage
+There are two different approaches in this repo: C_ext and FFI_lib.
+
+Neither works as intended under MRI, but the FFI version works under JRuby (thanks to Wayne Meissner).
+
+Ultimately, the MRI FFI_lib version is the one I want to use, but both MRI approaches are failing similarly at present.  The C_ext version might be useful sample code when it's working, as this area seems somewhat thinly documented.
+
+
+== C_ext
+
+=== Usage
 
 Create a localized Makefile
 
@@ -28,28 +37,43 @@ Run it
 
   ruby1.9 runcallme.rb
 
-== Problem
+=== Current (broken) behaviour
 
-When the Ruby callback is triggered, the interpreter crashes.  This might be a dereferencing bug that I haven't been able to fix.
-
-When using the C callback, the callback executes properly, but the Ruby threads (main thread and a separate heartbeat) apparently suspend. If the Ruby callback case can be fixed, I think this second problem will still exist.
-
-If callme.c is compiled to an executable, using C threading and the C callback, everything works as expected.
-
-It looks to me like control is never passed back to Ruby after the callback completes.  Any pointers would be greatly appreciated!  NPI.
-
-  $ ruby1.9 -v
   ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+
+Triggering with (RUBY_THREADS = false, C_THREADS = true, RUBY_CALLBACK = true) crashes MRI (Bus error).  This might be a dereferencing bug that I haven't been able to fix.
+
+Triggering with (RUBY_THREADS = false, C_THREADS = true, RUBY_CALLBACK = false) starts to work (the callback executes properly) but the Ruby threads (main thread and a separate heartbeat) apparently suspend.  Repeated triggers of the callback also execute properly, and some of the STDOUT buffer shows up...but the other threads never get rejoined, AFAICT.
+
+
+== FFI_lib (details to be added)
+
+=== Usage
+
+Install ruby-ffi from current source (0.4.0, presently not released/rubygem'ed)
+
+Then build and run (roughly) as above.
+
+
+=== Current (partially broken) behaviour
+
+  ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+
+(mostly similar to C_ext version)
+
+  jruby 1.3.1 (ruby 1.8.6p287) (2009-06-15 2fd6c3d) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_13) [x86_64-java]
+
+Working..!  JRuby has a different threading model, this might be the important difference.
+
 
 == History
 
-This started out as an attempt to make Apache ZooKeeper play with Ruby, via FFI.  Everything was going well until I tried the asynchronous functions with callbacks.  Sometimes the ruby code would hang, sometimes the interpreter would crash.
+This started out as an attempt to make Apache ZooKeeper play with Ruby, via FFI.  Everything was going well until I tried the asynchronous functions with callbacks.  Sometimes the ruby code would appear to hang, sometimes the interpreter would crash.
 
-I backed up a bit and wrote some sample code, still using FFI but not trying to talk to ZooKeeper.  Same problems.
+I backed up a bit and wrote some sample code, still using FFI but not trying to talk to ZooKeeper.  Same problems.  This code is the FFI_lib version in this repo.
 
-Then I decided to go straight to a C ext to see if there was a problem in FFI.  This is that attempt.
+Then I decided to go straight to a C ext to see if I was using FFI incorrectly.  This code is the C_ext version in this repo.
 
-The sample code from attempt #2 does work correctly under JRuby, suggesting that I'm mishandling the Ruby threads somehow.
 
 == Thanks for any help!
 

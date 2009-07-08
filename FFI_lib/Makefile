@@ -1,0 +1,40 @@
+CC=gcc
+CFLAGS=-Wall -g
+LD=gcc
+MODEL ?= 32
+CFLAGS+=-m$(MODEL)
+OS = $(strip $(shell uname -s | tr '[:upper:]' '[:lower:]'))
+ifeq ($(OS),sunos)
+  SOFLAGS=-shared
+endif
+ifeq ($(OS),darwin)
+  SOFLAGS=-dynamiclib
+endif
+PICFLAGS=-fPIC
+LDFLAGS=-g
+LDFLAGS+=-m$(MODEL)
+LIBS=-lc
+SOURCES=callme.c
+OBJECTS=$(SOURCES:.c=.o)
+PICOBJECTS=$(OBJECTS:.o=.pic.o)
+EXECUTABLE=callme
+
+build: callme libcallme.so
+
+callme:	$(OBJECTS)
+	$(LD) $(LDFLAGS) -o $@ $< $(LIBS)
+
+libcallme.so:	$(PICOBJECTS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
+
+%.o:	%.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+%.pic.o:	%.c
+	$(CC) $(PICFLAGS) $(CFLAGS) -o $@ -c $^
+
+clean:
+	-rm -f $(EXECUTABLE) *.o *.so
+
+#ld -shared -soname libcallme.so.1 -o libcallme.so.1.0 -lc callme.o
+#gcc -dynamiclib -o libcallme.1.0.dylib -lc callme.o    ## Darwin
