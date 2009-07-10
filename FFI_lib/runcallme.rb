@@ -1,8 +1,13 @@
 #!/opt/local/bin/ruby1.9
 
-#require 'debug'
-require 'callme'
-include CallMeModule
+require 'ffi'
+
+module CallMe
+  extend FFI::Library
+  ffi_lib "libcallme.so"
+  callback(:fp, [:int], :void)
+  attach_function :watch_path, [:string, :fp, :int], :void
+end
 
 class Object
   def to_b
@@ -26,9 +31,9 @@ puts "-- Use C threads?    #{USE_C_THREADS.to_s}"
 Thread.new { while true do print '#'; sleep 1; end } ## heartbeat
 
 if USE_RUBY_THREADS
-  Thread.new { CallMe.watch_path("somefile", callback, USE_C_THREADS) }
+  Thread.new { CallMe.watch_path("somefile", callback, USE_C_THREADS ? 1 : 0) }
 else
-  CallMe.watch_path("somefile", callback, USE_C_THREADS)
+  CallMe.watch_path("somefile", callback, USE_C_THREADS ? 1 : 0)
 end
 
 time_to_stop = Time.now.to_i + 30

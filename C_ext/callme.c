@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -47,10 +48,11 @@ VALUE watch_path(VALUE self, VALUE v_path, fp cb_fp, unsigned char use_pthreads)
   struct watcher_struct* w;
 
   w = (watcher_struct *)malloc(sizeof(watcher_struct));
-  w->path = path;
+  w->path = strdup(path);
   w->callback = !NIL_P(cb_fp) ? cb_fp : (fp)cb_internal;
   printf("-- Trigger callback with:\n   touch %s/%s\n",getcwd(NULL,0),w->path);
   printf("-- Will use callback at address 0x%08x\n",(unsigned int)w->callback);
+  printf("-- use_pthreads is %d\n", use_pthreads);
   fflush(stdout);
   if ( use_pthreads )
     pthread_create(&watcher_thr,NULL,(void*(*)(void*))do_watch,(void*)w);

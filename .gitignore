@@ -4,3 +4,4 @@ C_ext/Makefile
 *.o
 .*.swp
 *~
+somefile

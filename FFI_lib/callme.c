@@ -17,7 +17,7 @@ static void *do_watch(struct watcher_struct *w)
   time_t time0;
 
   time0 = time(NULL);
-  printf("(watching)");
+  printf("(watching)"); fflush(stdout);
   while(1)
     {
     if (stat(w->path,&statbuf) == 0)

@@ -23,47 +23,64 @@ Create a localized Makefile
 
   ruby1.9 extconf.rb
 
-Build the library
+Build the C library
 
   make
 
-Pick a set of runtime options in runcallme.rb.  The following is the most relevant to my testing, but the other permutations might reveal interesting bits too.
+Run the Ruby code
 
-  USE_RUBY_THREADS = false
-  USE_C_THREADS = true
-  USE_RUBY_CALLBACK = true
+  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
 
-Run it
-
-  ruby1.9 runcallme.rb
-
-=== Current (broken) behaviour
-
-  ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
-
-Triggering with (RUBY_THREADS = false, C_THREADS = true, RUBY_CALLBACK = true) crashes MRI (Bus error).  This might be a dereferencing bug that I haven't been able to fix.
-
-Triggering with (RUBY_THREADS = false, C_THREADS = true, RUBY_CALLBACK = false) starts to work (the callback executes properly) but the Ruby threads (main thread and a separate heartbeat) apparently suspend.  Repeated triggers of the callback also execute properly, and some of the STDOUT buffer shows up...but the other threads never get rejoined, AFAICT.
+The environment settings above are the most relevant for my ultimate use case (and the defaults if none are specified), but the other permutations might reveal interesting bits too.  You can use them to select whether to use C and/or Ruby threads, and whether to use the C callback instead of the Ruby one.
 
 
-== FFI_lib (details to be added)
+=== Current behaviour (broken)
+
+==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i686-linux]
+
+  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
+
+Starts up properly, but triggering the callback crashes MRI (Bus error).  This might be a dereferencing bug that I haven't been able to fix.
+
+  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=true ruby1.9 runcallme.rb
+
+Starts up properly, and triggering the callback works (the callback executes) but the Ruby threads (main thread and a separate heartbeat) apparently suspend.  Repeated triggers of the callback also execute properly, and sometimes bits of the STDOUT buffer show up...but the lost Ruby threads never get rejoined, AFAICT.
+
+
+== FFI_lib
 
 === Usage
 
-Install ruby-ffi from current source (0.4.0, presently not released/rubygem'ed)
+Install ruby-ffi from Mercurial repo (0.4.0, presently not released/rubygem'ed)
 
-Then build and run (roughly) as above.
+  hg clone https://kenai.com/hg/ruby-ffi~mercurial
+  cd ruby-ffi~mercurial
+  rake1.9 gem
+  gem1.9 install ffi-0.4.0.gem
+
+Build and run as above.
+
+You might need to make with MODEL=64 to build 64bit libs for JRuby.
 
 
-=== Current (partially broken) behaviour
+=== Current behaviour (broken on MRI, working on JRuby)
 
-  ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
 
-(mostly similar to C_ext version)
+  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
 
-  jruby 1.3.1 (ruby 1.8.6p287) (2009-06-15 2fd6c3d) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_13) [x86_64-java]
+Starts up properly, but triggering the callback sometimes works and sometimes crashes MRI ("cfp consistency error - send").  When the callback does execute successfully, the Ruby threads apparently suspend, as in the C_ext version.
 
-Working..!  JRuby has a different threading model, this might be the important difference.
+...Sometimes this seems to consistently crash the second time the callback is triggered, othertimes not so consistently.
+
+==== jruby 1.3.1 (ruby 1.8.6p287) (2009-06-15 2fd6c3d) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_13) [x86_64-java]
+
+  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false jruby runcallme.rb
+
+Working..!  JRuby uses JVM threads, obviously...
+
+You might need to make with MODEL=64 to build 64bit libs for JRuby.
 
 
 == History
