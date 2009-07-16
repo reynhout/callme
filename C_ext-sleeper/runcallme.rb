@@ -11,13 +11,14 @@ Thread.new { while true do print "[#{Time.now.to_i - time0}]"; sleep 1; end }
 
 cb_a = Proc.new { |x| print "(Ruby_A.#{x})" }
 cb_b = Proc.new { |x| print "(Ruby_B)" }
+cb_c = Proc.new { |x| print "(Ruby_C)" }
 
-CallMe.start_stf(cb_a,4)
-CallMe.start_stf(cb_a,2)
-CallMe.start_stf(cb_a,5)
-CallMe.start_stf(cb_b,7)
-CallMe.start_stf(cb_b,9)
+cb = [cb_a,cb_b,cb_c]
 
-while Time.now.to_i < time0 + 10 do print '.'; sleep 0.5 end
+(1..12).each do |x|
+  CallMe.start_stf(cb[x%3],x) if x%2 == 0
+end
+
+while Time.now.to_i < time0 + 14 do print '.'; sleep 0.5 end
 puts "done"
 

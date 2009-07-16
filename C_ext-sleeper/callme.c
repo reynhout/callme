@@ -35,6 +35,7 @@ static void start_stf(VALUE self, void(*cb)(void), VALUE s)
 
   printf("(%d:creating thread)",stf->s), fflush(stdout);
   pthread_create(&watcher_thr, NULL, (void*(*)(void*))sleep_then_fire, stf);
+  //pthread_detach(watcher_thr);
   printf("(%d:thread created)",stf->s), fflush(stdout);
   }
 
