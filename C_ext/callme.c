@@ -33,8 +33,9 @@ static void do_watch(struct watcher_struct* w)
       unlink(w->path);
       printf("(firing callback 0x%08x)", (unsigned int)w->callback);
       fflush(stdout);
+      printf("(tmp_x is %d)",tmp_x); fflush(stdout);
       //w->callback(tmp_x);
-      rb_thread_blocking_region((rb_blocking_function_t *)w->callback, tmp_x, RUBY_UBF_IO, 0);
+      rb_thread_blocking_region((rb_blocking_function_t *)w->callback, &tmp_x, RUBY_UBF_IO, 0);
       }
     sleep(1);
     }
