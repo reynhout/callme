@@ -10,17 +10,16 @@ typedef struct stf_data {
   int s;
   } stf_data;
 
+void fire_cb(struct stf_data* stf)
+  {
+  rb_funcall((int)stf->cb,rb_intern("call"),1,INT2FIX(stf->s));
+  }
+
 static void sleep_then_fire(struct stf_data* stf)
   {
-  int x = 99;
-
-  printf("(%d:sleeping)",stf->s); fflush(stdout);
+  printf("(stf:%d)",stf->s); fflush(stdout);
   sleep(stf->s);
-  printf("(%d:funcalling cb)",stf->s), fflush(stdout);
-  rb_funcall((int)stf->cb,rb_intern("call"),1,INT2FIX(x));
-  printf("(%d:cb returned)",stf->s), fflush(stdout);
-  rb_thread_sleep_forever();
-  //pthread_exit(NULL);
+  rb_thread_create((void *)fire_cb,stf);
   }
 
 static void start_stf(VALUE self, void(*cb)(void), VALUE s)
@@ -33,10 +32,7 @@ static void start_stf(VALUE self, void(*cb)(void), VALUE s)
   stf->cb = cb;
   stf->s = FIX2INT(s);
 
-  printf("(%d:creating thread)",stf->s), fflush(stdout);
   pthread_create(&watcher_thr, NULL, (void*(*)(void*))sleep_then_fire, stf);
-  //pthread_detach(watcher_thr);
-  printf("(%d:thread created)",stf->s), fflush(stdout);
   }
 
 void Init_callme() {
