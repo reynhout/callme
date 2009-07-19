@@ -6,33 +6,33 @@
 #include <ruby.h>
 
 typedef struct stf_data {
-  void* cb;
+  void *cb;
   int s;
   } stf_data;
 
-void fire_cb(struct stf_data* stf)
+void fire_cb(struct stf_data *stf)
   {
-  rb_funcall((int)stf->cb,rb_intern("call"),1,INT2FIX(stf->s));
+  rb_funcall((int)stf->cb, rb_intern("call"), 1, INT2FIX(stf->s));
   }
 
-static void sleep_then_fire(struct stf_data* stf)
+static void sleep_then_fire(struct stf_data *stf)
   {
-  printf("(stf:%d)",stf->s); fflush(stdout);
+  printf("(stf:%d)", stf->s); fflush(stdout);
   sleep(stf->s);
-  rb_thread_create((void *)fire_cb,stf);
+  rb_thread_create((void *)fire_cb, stf);
   }
 
-static void start_stf(VALUE self, void(*cb)(void), VALUE s)
+static void start_stf(VALUE self, void *cb, VALUE s)
   {
-  pthread_t watcher_thr;
-  struct stf_data* stf;
+  pthread_t a_thr;
+  struct stf_data *stf;
 
   stf = (stf_data *)malloc(sizeof(stf_data));
 
   stf->cb = cb;
   stf->s = FIX2INT(s);
 
-  pthread_create(&watcher_thr, NULL, (void*(*)(void*))sleep_then_fire, stf);
+  pthread_create(&a_thr, NULL, (void *(*)(void *))sleep_then_fire, stf);
   }
 
 void Init_callme() {
