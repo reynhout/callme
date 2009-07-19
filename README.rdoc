@@ -10,25 +10,19 @@ There are three demos here, two using straight C extensions, and one using ruby-
 
 The C_ext versions are now working, but the ruby-ffi version isn't yet (under MRI -- JRuby works great, thanks to Wayne Meissner).
 
-Ultimately, MRI + ruby-ffi version is my preferred environment, and now that the C_ext code is working, the FFI_lib version should come soon.
+Ultimately, MRI + ruby-ffi is my preferred environment, and now that the C_ext code is working, the FFI_lib version should come soon.
 
-The C_ext versions might be useful sample code for others, as this area seems somewhat thinly documented.  (Bug/bad style reports welcome!)
+The C_ext versions might be useful as sample code, as this area seems somewhat thinly documented.  (Bug/bad style reports welcome!)
 
 
 == C_ext versions
 
 === Usage
 
-Create a localized Makefile
+Create a localized Makefile, build the C lib, then run the Ruby code
 
   ruby1.9 extconf.rb
-
-Build the C library
-
   make
-
-Run the Ruby code
-
   ruby1.9 runcallme.rb
 
 
@@ -48,8 +42,7 @@ Build and run as above.
 You might need to make with MODEL=64 to build 64bit libs for JRuby.
 
 
-=== Current behaviour (broken on MRI, working on JRuby)
-
+=== Current behaviour (MRI, broken)
 ==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
 
   USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
@@ -58,6 +51,7 @@ Starts up properly, but triggering the callback sometimes works and sometimes cr
 
 ...Sometimes this seems to consistently crash the second time the callback is triggered, othertimes not so consistently.
 
+=== Current behaviour (JRuby, working!)
 ==== jruby 1.3.1 (ruby 1.8.6p287) (2009-06-15 2fd6c3d) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_13) [x86_64-java]
 
   USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false jruby runcallme.rb
