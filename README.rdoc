@@ -4,18 +4,18 @@ A simple Ruby 1.9 demo C extension with a callback.
 
 Extracted from ongoing efforts to write a Ruby interface to Apache ZooKeeper (github link soon).
 
+There are three demos here, two using straight C extensions, and one using ruby-ffi.
+
 == Status
 
-Not working as expected, looking for assistance.
+The C_ext versions are now working, but the ruby-ffi version isn't yet (under MRI -- JRuby works great, thanks to Wayne Meissner).
 
-There are two different approaches in this repo: C_ext and FFI_lib.
+Ultimately, MRI + ruby-ffi version is my preferred environment, and now that the C_ext code is working, the FFI_lib version should come soon.
 
-Neither works as intended under MRI, but the FFI version works under JRuby (thanks to Wayne Meissner).
-
-Ultimately, the MRI FFI_lib version is the one I want to use, but both MRI approaches are failing similarly at present.  The C_ext version might be useful sample code when it's working, as this area seems somewhat thinly documented.
+The C_ext versions might be useful sample code for others, as this area seems somewhat thinly documented.  (Bug/bad style reports welcome!)
 
 
-== C_ext
+== C_ext versions
 
 === Usage
 
@@ -29,23 +29,7 @@ Build the C library
 
 Run the Ruby code
 
-  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
-
-The environment settings above are the most relevant for my ultimate use case (and the defaults if none are specified), but the other permutations might reveal interesting bits too.  You can use them to select whether to use C and/or Ruby threads, and whether to use the C callback instead of the Ruby one.
-
-
-=== Current behaviour (broken)
-
-==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
-==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i686-linux]
-
-  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
-
-Starts up properly, but triggering the callback crashes MRI (Bus error).  This might be a dereferencing bug that I haven't been able to fix.
-
-  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=true ruby1.9 runcallme.rb
-
-Starts up properly, and triggering the callback works (the callback executes) but the Ruby threads (main thread and a separate heartbeat) apparently suspend.  Repeated triggers of the callback also execute properly, and sometimes bits of the STDOUT buffer show up...but the lost Ruby threads never get rejoined, AFAICT.
+  ruby1.9 runcallme.rb
 
 
 == FFI_lib
@@ -70,7 +54,7 @@ You might need to make with MODEL=64 to build 64bit libs for JRuby.
 
   USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
 
-Starts up properly, but triggering the callback sometimes works and sometimes crashes MRI ("cfp consistency error - send").  When the callback does execute successfully, the Ruby threads apparently suspend, as in the C_ext version.
+Starts up properly, but triggering the callback sometimes works and sometimes crashes MRI ("cfp consistency error - send").  When the callback does execute successfully, the Ruby threads apparently suspend.
 
 ...Sometimes this seems to consistently crash the second time the callback is triggered, othertimes not so consistently.
 
@@ -89,9 +73,6 @@ This started out as an attempt to make Apache ZooKeeper play with Ruby, via FFI.
 
 I backed up a bit and wrote some sample code, still using FFI but not trying to talk to ZooKeeper.  Same problems.  This code is the FFI_lib version in this repo.
 
-Then I decided to go straight to a C ext to see if I was using FFI incorrectly.  This code is the C_ext version in this repo.
-
-
-== Thanks for any help!
+Then I decided to go straight to a C ext to see if I was using FFI incorrectly.  This code is the C_ext version in this repo.  Now that this is working, the FFI code should be resolved soon.
 
 
