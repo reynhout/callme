@@ -3,6 +3,6 @@
 *.o
 .*.swp
 *~
-C_ext*/Makefile
-FFI_lib/callme
+Makefile
+callme
 somefile

@@ -4,60 +4,57 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <ruby.h>
 
-typedef void (*sig_t) (int);
-typedef struct watcher_struct {
+typedef struct watcher_data {
   char *path;
-  sig_t callback;
-  } watcher_struct;
+  int (*cb)(int);
+  int s;
+  } watcher_data;
 
-static void *do_watch(struct watcher_struct *w)
+static void cb_native(struct watcher_data *w)
+  { printf("(C:%d)", w->s); fflush(stdout); }
+
+static void cb_ruby(struct watcher_data *w)
+  { (*w->cb)(w->s); }
+
+static void do_watch(struct watcher_data *w)
   {
   struct stat statbuf;
-  time_t time0;
+  time_t time0 = time(NULL);
 
-  time0 = time(NULL);
   printf("(watching)"); fflush(stdout);
   while(1)
     {
-    if (stat(w->path,&statbuf) == 0)
+    if (stat(w->path, &statbuf) == 0)
       {
+      w->s = statbuf.st_mtime-time0;
       unlink(w->path);
-      w->callback(statbuf.st_mtime-time0);
+      rb_thread_create((void *)cb_ruby, w);
       }
     sleep(1);
     }
   }
 
-void watch_path(char *path, sig_t cbfp, int use_pthreads)
+void watch_path(char *path, void *cb_fp)
   {
   pthread_t watcher_thr;
-  struct watcher_struct *w;
-  char cwd[1024];
+  struct watcher_data *w;
 
-  w = (watcher_struct *) malloc(sizeof(watcher_struct));
+  w = (watcher_data *)malloc(sizeof(watcher_data));
   w->path = strdup(path);
-  w->callback = cbfp;
+  w->cb = cb_fp;
 
-  printf("trigger callback with:\n  touch %s/%s\n",getcwd(cwd,sizeof(cwd)),w->path);
-  if ( use_pthreads == 1 )
-    {
-    printf("creating watcher thread\n");
-    pthread_create(&watcher_thr,NULL,(void *(*)(void*))do_watch,(void *)w);
-    }
-  else
-    do_watch(w);
+  printf("-- Using callback at 0x%08x\n", (unsigned int)w->cb);
+  printf("-- Trigger with:\n   touch %s/%s\n", getcwd(NULL, 0), w->path);
+  pthread_create(&watcher_thr, NULL, (void *(*)(void *))do_watch, (void *)w);
   }
-
-void cb_internal(x)
-  { printf("(C:%d)",x); fflush(stdout); }
 
 int main(void)
   {
   int i;
 
-  printf("using C callback cb_internal\n");
-  watch_path("somefile",&cb_internal,1);
+  watch_path("somefile", &cb_native);
   for ( i=0; i<=30; i++ )
     { printf("."); fflush(stdout); sleep(1); }
   printf("done\n");

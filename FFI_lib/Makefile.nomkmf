@@ -36,5 +36,3 @@ libcallme.so:	$(PICOBJECTS)
 clean:
 	-rm -f $(EXECUTABLE) *.o *.so
 
-#ld -shared -soname libcallme.so.1 -o libcallme.so.1.0 -lc callme.o
-#gcc -dynamiclib -o libcallme.1.0.dylib -lc callme.o    ## Darwin
