@@ -5,14 +5,27 @@ require 'ffi'
 module CallMe
   extend FFI::Library
   ffi_lib "callme.bundle"
-  callback :callme_callback, [:int], :void
+  callback :callme_callback, [:pointer], :void
   attach_function :watch_path, [:string, :callme_callback], :void
+
+  class WatcherData < FFI::Struct
+    layout :path, :string,
+           :cb, :pointer,
+           :secs, :int
+
+    def to_s
+      "#{self[:path]},#{self[:cb].inspect},#{self[:secs]}"
+    end
+  end
 end
 
 STDOUT.sync = true
 Thread.abort_on_exception = true
 
-Callback = Proc.new { |x| print "(Ruby:#{x})" }
+Callback = Proc.new do |x|
+  print "(Ruby:#{CallMe::WatcherData.new(x).to_s})"
+end
+
 puts "-- Passing Callback #{Callback.inspect}"
 
 time0 = Time.now.to_i

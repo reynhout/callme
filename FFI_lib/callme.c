@@ -16,7 +16,7 @@ static void cb_native(struct watcher_data *w)
   { printf("(C:%d)", w->s); fflush(stdout); }
 
 static void cb_ruby(struct watcher_data *w)
-  { (*w->cb)(w->s); }
+  { (*w->cb)((int)w); }
 
 static void do_watch(struct watcher_data *w)
   {
@@ -42,12 +42,13 @@ void watch_path(char *path, void *cb_fp)
   struct watcher_data *w;
 
   w = (watcher_data *)malloc(sizeof(watcher_data));
+  /* in real code, we would also free(w) somewhere.. */
   w->path = strdup(path);
   w->cb = cb_fp;
 
   printf("-- Using callback at 0x%08x\n", (unsigned int)w->cb);
   printf("-- Trigger with:\n   touch %s/%s\n", getcwd(NULL, 0), w->path);
-  pthread_create(&watcher_thr, NULL, (void *(*)(void *))do_watch, (void *)w);
+  pthread_create(&watcher_thr, NULL, (void *(*)(void *))do_watch, w);
   }
 
 int main(void)
