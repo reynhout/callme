@@ -29,10 +29,12 @@ Create a localized Makefile, build the C lib, then run the Ruby code
 
 Install ruby-ffi from Mercurial repo (0.4.0, presently not released/rubygem'ed)
 
-  hg clone https://kenai.com/hg/ruby-ffi~mercurial
+  hg clone http://kenai.com/hg/ruby-ffi~mercurial
   cd ruby-ffi~mercurial
   rake1.9 gem
   gem1.9 install pkg/ffi-0.4.0.gem
+
+(On OSX, add "#include <pthread.h>" to ext/ffi_c/Invoker.c before creating the gem)
 
 Create a localized Makefile, build the C lib, then run the Ruby code
 
