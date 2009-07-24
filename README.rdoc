@@ -4,20 +4,19 @@ A simple Ruby 1.9 demo C extension with a callback.
 
 Extracted from ongoing efforts to write a Ruby interface to Apache ZooKeeper (github link soon).
 
-There are three demos here, two using straight C extensions, and one using ruby-ffi.
+There are three demos here, two using straight C extensions and one using ruby-ffi.
+
 
 == Status
 
-The C_ext versions are now working, but the ruby-ffi version isn't yet (under MRI -- JRuby works great, thanks to Wayne Meissner).
+The C ext variations are working properly.  The ruby-ffi variation works, but doesn't use FFI fully...and I've temporarily broken the build for use under JRuby.
 
-Ultimately, MRI + ruby-ffi is my preferred environment, and now that the C_ext code is working, the FFI_lib version should come soon.
-
-The C_ext versions might be useful as sample code, as this area seems somewhat thinly documented.  (Bug/bad style reports welcome!)
+MRI + ruby-ffi is the environment I am most interested in, but the other examples might also be useful as sample code, as this area seems somewhat thinly documented.  (Bug/bad style reports welcome!)
 
 
-== C_ext versions
+== Usage
 
-=== Usage
+=== C extension variations
 
 Create a localized Makefile, build the C lib, then run the Ruby code
 
@@ -26,39 +25,26 @@ Create a localized Makefile, build the C lib, then run the Ruby code
   ruby1.9 runcallme.rb
 
 
-== FFI_lib
-
-=== Usage
+=== ruby-ffi variation
 
 Install ruby-ffi from Mercurial repo (0.4.0, presently not released/rubygem'ed)
 
   hg clone https://kenai.com/hg/ruby-ffi~mercurial
   cd ruby-ffi~mercurial
   rake1.9 gem
-  gem1.9 install ffi-0.4.0.gem
+  gem1.9 install pkg/ffi-0.4.0.gem
 
-Build and run as above.
+Create a localized Makefile, build the C lib, then run the Ruby code
 
-You might need to make with MODEL=64 to build 64bit libs for JRuby.
+  ruby1.9 extconf.rb
+  make
+  ruby1.9 runcallme.rb
 
+To run under JRuby (you might need to make with MODEL=64 to build 64bit libs)
 
-=== Current behaviour (MRI, broken)
-==== ruby 1.9.1p129 (2009-05-12 revision 23412) [i386-darwin9]
+  jruby runcallme.rb
 
-  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false ruby1.9 runcallme.rb
-
-Starts up properly, but triggering the callback sometimes works and sometimes crashes MRI ("cfp consistency error - send").  When the callback does execute successfully, the Ruby threads apparently suspend.
-
-...Sometimes this seems to consistently crash the second time the callback is triggered, othertimes not so consistently.
-
-=== Current behaviour (JRuby, working!)
-==== jruby 1.3.1 (ruby 1.8.6p287) (2009-06-15 2fd6c3d) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_13) [x86_64-java]
-
-  USE_C_THR=true USE_RUBY_THR=false USE_C_CB=false jruby runcallme.rb
-
-Working..!  JRuby uses JVM threads, obviously...
-
-You might need to make with MODEL=64 to build 64bit libs for JRuby.
+(This is the unfinished part -- FFI shouldn't require this extconf stuff...and JRuby won't even run presently due to the inappropriate build...WIP)
 
 
 == History
@@ -67,6 +53,5 @@ This started out as an attempt to make Apache ZooKeeper play with Ruby, via FFI.
 
 I backed up a bit and wrote some sample code, still using FFI but not trying to talk to ZooKeeper.  Same problems.  This code is the FFI_lib version in this repo.
 
-Then I decided to go straight to a C ext to see if I was using FFI incorrectly.  This code is the C_ext version in this repo.  Now that this is working, the FFI code should be resolved soon.
-
+Then I decided to go straight to a C ext to see if I was using FFI incorrectly.  This code is the C_ext version in this repo.
 
